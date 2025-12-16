@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Al Qudoos — Secure Invoice App</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+:root{--navy:#0A1D37;--sea:#00C2A8;--light:#F0F7F7;--white:#fff;--radius:12px;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;}
+body{background:var(--light);color:var(--navy);}
+
+/* main app styles */
+header{background:var(--navy);color:white;padding:14px 16px;text-align:center;}
+header h1{margin:0;font-size:20px;}
+nav{display:flex;gap:8px;justify-content:center;padding:10px;background:#0e344f;flex-wrap:wrap;align-items:center;}
+nav button{border:0;cursor:pointer;font-weight:700;border-radius:8px;}
+nav .tab-btn{background:transparent;color:white;padding:10px 14px;}
+nav .tab-btn.active{background:rgba(255,255,255,0.08);}
+
+.container{max-width:1150px;margin:20px auto;padding:16px;}
+.section{display:none;}
+.section.active{display:block;}
+.card{background:var(--white);border-radius:var(--radius);padding:16px;box-shadow:0 6px 20px rgba(3,18,40,0.06);margin-bottom:18px;}
+label{display:block;font-size:13px;margin-bottom:6px;color:#1b3550;}
+input[type="text"],input[type="date"],textarea,select{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #d6dde3;font-size:14px;background:white;}
+textarea{min-height:64px;resize:vertical;}
+.row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;}
+.col{flex:1;min-width:160px;}
+.btn{display:inline-block;padding:10px 14px;border-radius:999px;border:0;cursor:pointer;font-weight:700;}
+.btn.primary{background:var(--sea);color:white;}
+.btn.dark{background:var(--navy);color:white;}
+.btn.ghost{background:transparent;border:1px solid #d6dde3;color:var(--navy);}
+.btn-sm{padding:6px 10px;font-size:12px;}
+.table{width:100%;border-collapse:collapse;margin-top:10px;}
+.table th{background:var(--navy);color:white;padding:10px;font-size:13px;text-align:center;}
+.table td{padding:8px;border:1px solid #e6eef1;vertical-align:middle;text-align:center;}
+.table td input,.table td select{width:100%;padding:6px 8px;border-radius:6px;border:1px solid #d6dde3;font-size:13px;}
+.action-del{background:#ff5864;color:white;border:0;padding:6px 8px;border-radius:8px;cursor:pointer;}
+.action-edit{background:#ffb84d;color:white;border:0;padding:6px 8px;border-radius:8px;cursor:pointer;}
+.muted{color:#557;font-size:13px;}
+.right{text-align:right;}
+.notice{color:#b23;font-weight:700;margin-top:6px;}
+.small{font-size:13px;color:#445;}
+.search-result{margin-top:12px;padding:10px;border-radius:8px;border:1px dashed #d6dde3;background:#fbfcfd;}
+.logo-preview{border:1px solid #d6dde3;border-radius:8px;padding:6px;display:flex;align-items:center;justify-content:center;min-height:70px;background:#f8fafb;}
+.logo-preview img{max-height:60px;max-width:100%;}
+
+/* LOGIN */
+#loginScreen{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#0A1D37;
+}
+.login-wrapper{width:100%;max-width:380px;padding:24px 20px;}
+.login-card{
+  background:#ffffff;
+  border-radius:14px;
+  padding:24px 22px 26px;
+  box-shadow:0 12px 35px rgba(0,0,0,0.25);
+}
+.logo-row{display:flex;align-items:center;margin-bottom:18px;}
+.logo-row h2{font-size:20px;color:#0A1D37;margin:0;}
+.login-card h3{font-size:16px;margin:0 0 14px;color:#304058;}
+.login-card label{font-size:13px;color:#4a5870;margin-bottom:4px;}
+.login-input{
+  width:100%;padding:9px 11px;border-radius:8px;border:1px solid #c8d1dc;
+  font-size:14px;margin-bottom:10px;
+}
+.login-input:focus{
+  outline:none;border-color:#00C2A8;box-shadow:0 0 0 2px rgba(0,194,168,0.18);
+}
+.login-btn{
+  width:100%;padding:10px;border-radius:999px;border:none;margin-top:4px;
+  background:#00C2A8;color:#ffffff;font-weight:600;font-size:14px;cursor:pointer;
+}
+.login-btn:hover{background:#00aa93;}
+.login-demo{margin-top:8px;font-size:12px;color:#6c7a8f;}
+.login-error{margin-top:8px;color:#b3261e;font-size:12px;display:none;}
+.login-footer{text-align:center;color:#d0dde9;font-size:12px;margin-top:10px;}
+
+/* PRINT */
+@media print{
+  body *{visibility:hidden;}
+  #printArea,#printArea *{visibility:visible;}
+  #printArea{
+    position:absolute;left:0;top:0;width:100%;
+    padding:20px;background:white;color:black;font-size:12px;
+  }
+  #printArea table{width:100%;border-collapse:collapse;}
+  #printArea th,#printArea td{border:0;padding:6px;text-align:left;}
+  #printArea thead{display:table-header-group;}
+}
+@media screen{
+  #printArea{display:none;}
+}
+@media (max-width:720px){
+  .row{flex-direction:column;}
+  nav{padding:8px;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="logo-row">
+        <h2>Al Qudoos</h2>
+      </div>
+      <h3>Sign in to continue</h3>
+      <form id="loginForm">
+        <label for="user">Username</label>
+        <input type="text" id="user" class="login-input" autocomplete="username">
+
+        <label for="pass">Password</label>
+        <input type="password" id="pass" class="login-input" autocomplete="current-password">
+
+        <!-- Account / Shop name REMOVED -->
+
+        <button type="submit" class="login-btn">Login</button>
+        <div class="login-demo">User: admin, Pass: 1234.</div>
+        <div id="errorBox" class="login-error">Invalid username or password.</div>
+      </form>
+    </div>
+    <div class="login-footer">© 2025 Al Qudoos Group</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appRoot" style="display:none;">
+
+<header>
+  <h1>Al Qudoos — Invoice, Ledger & Payments</h1>
+</header>
+
+<nav>
+  <button class="tab-btn active" data-show="newInvoice">New Invoice</button>
+  <button class="tab-btn" data-show="ledgerTab">Ledger</button>
+  <button class="tab-btn" data-show="creditBillTab">Credit Bill</button>
+  <button class="tab-btn" data-show="paymentTab">Payment</button>
+  <button class="tab-btn" data-show="setupTab">Setup</button>
+</nav>
+
+<div class="container">
+
+  <!-- NEW INVOICE -->
+  <section id="newInvoice" class="section active">
+    <div class="card">
+      <h2>Create / Edit Invoice</h2>
+      <div class="row">
+        <div class="col">
+          <label>Select Party</label>
+          <select id="partySelect"><option value="">-- choose party --</option></select>
+        </div>
+        <div class="col">
+          <label>Invoice No</label>
+          <input id="invNo" type="text" placeholder="ALQ-1 (auto) or type custom">
+        </div>
+        <div class="col">
+          <label>Grand Qty</label>
+          <input id="grandQtyInput" type="text" readonly style="background:#eee;">
+        </div>
+        <div class="col">
+          <label>Date</label>
+          <input id="invDate" type="date">
+        </div>
+        <div class="col">
+          <label>Truck No</label>
+          <input id="truckNo" type="text" placeholder="Truck number">
+        </div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <h3>Invoice Details</h3>
+        <div style="overflow:auto;">
+          <table class="table" id="invTable">
+            <thead>
+              <tr>
+                <th>KHATA</th><th>VARIETY</th><th>TYPE</th><th>LAYER</th><th>QTY</th><th>RATE</th><th>TOTAL</th><th>ACTION</th>
+              </tr>
+            </thead>
+            <tbody id="invBody"></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4" class="right"><b>Grand Totals</b></td>
+                <td id="grandQtyFoot" style="text-align:center">0</td>
+                <td></td>
+                <td id="grandAmtFoot" style="text-align:center">0.00</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn primary" id="addRowBtn">Add Row</button>
+          <button class="btn dark" id="saveInvBtn">Save Invoice</button>
+          <button class="btn" id="printInvBtn" style="background:#2e7d32;color:white;">Print Invoice</button>
+          <button class="btn ghost" id="newInvBtn">New Invoice</button>
+        </div>
+
+        <p id="invNotice" class="notice" style="display:none;"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEDGER -->
+  <section id="ledgerTab" class="section">
+    <div class="card">
+      <h2>Ledger</h2>
+      <div class="row" style="margin-bottom:8px;">
+        <div class="col">
+          <label>Select Party</label>
+          <select id="ledgerPartySelect"><option value="">-- choose party --</option></select>
+        </div>
+        <div class="col">
+          <label>From Date</label>
+          <input id="ledgerFromDate" type="date">
+        </div>
+        <div class="col">
+          <label>To Date</label>
+          <input id="ledgerToDate" type="date">
+        </div>
+        <div style="align-self:flex-end;">
+          <button class="btn primary" id="loadLedgerBtn">Load Ledger</button>
+        </div>
+      </div>
+
+      <div style="overflow:auto;">
+        <table class="table" id="ledgerTable">
+          <thead>
+            <tr><th>Date</th><th>Invoice No / Desc</th><th>Grand Qty</th><th>Debit</th><th>Credit</th><th>Balance</th></tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2" class="right"><b>Totals</b></td>
+              <td id="ledgerTotalQty">0</td>
+              <td id="ledgerTotalDebit">0.00</td>
+              <td id="ledgerTotalCredit">0.00</td>
+              <td id="ledgerFinalBalance">0.00</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <button class="btn" id="printLedgerBtn" style="margin-top:10px;background:#2e7d32;color:white;">Print Ledger</button>
+    </div>
+  </section>
+
+  <!-- CREDIT BILL -->
+  <section id="creditBillTab" class="section">
+    <div class="card">
+      <h2>Credit Bill</h2>
+      <div class="row" style="margin-bottom:12px;">
+        <div class="col">
+          <label>Select Party</label>
+          <select id="creditPartySelect"><option value="">-- choose party --</option></select>
+        </div>
+        <div class="col">
+          <label>Date</label>
+          <input id="creditDate" type="date">
+        </div>
+        <div class="col">
+          <label>Invoice No.</label>
+          <input id="creditInvNo" type="text" placeholder="Enter invoice / bill no">
+        </div>
+      </div>
+
+      <div class="row" style="margin-bottom:12px;">
+        <div class="col">
+          <label>QNTY</label>
+          <input id="creditQty" type="text" placeholder="Quantity">
+        </div>
+        <div class="col">
+          <label>Credit Amount</label>
+          <input id="creditAmount" type="text" placeholder="Amount">
+        </div>
+        <div class="col">
+          <label>Total</label>
+          <input id="creditTotal" type="text" readonly style="background:#eee;">
+        </div>
+      </div>
+
+      <div style="margin-top:4px;">
+        <button class="btn dark" id="saveCreditBtn">Save Credit Bill</button>
+      </div>
+
+      <p id="creditNotice" class="notice" style="display:none;"></p>
+
+      <div style="margin-top:16px;">
+        <h3>Saved Credit Bills (This Party)</h3>
+        <table class="table" id="creditTable">
+          <thead>
+            <tr><th>Date</th><th>Invoice No.</th><th>Qty</th><th>Credit Amount</th><th>Delete</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAYMENT -->
+  <section id="paymentTab" class="section">
+    <div class="card">
+      <h2>Record Payment</h2>
+      <div class="row" style="margin-bottom:12px;">
+        <div class="col">
+          <label>Select Party</label>
+          <select id="paymentPartySelect"><option value="">-- choose party --</option></select>
+        </div>
+        <div class="col">
+          <label>Payment Date</label>
+          <input id="paymentDate" type="date">
+        </div>
+        <div class="col">
+          <label>Type</label>
+          <select id="paymentType">
+            <option value="credit">Credit (Payment Received)</option>
+            <option value="debit">Debit (Charge / Expense)</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>Amount</label>
+          <input id="paymentAmount" type="text" placeholder="Enter amount">
+        </div>
+        <div class="col">
+          <label>Notes</label>
+          <input id="paymentNotes" type="text" placeholder="Optional notes">
+        </div>
+        <div style="align-self:flex-end;">
+          <button class="btn primary" id="recordPaymentBtn">Record Payment</button>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <h3>Payments
+          <span style="float:right;">
+            <button class="btn ghost btn-sm" id="showPaymentsBtn">Show</button>
+            <button class="btn ghost btn-sm" id="hidePaymentsBtn" style="display:none;">Hide</button>
+          </span>
+        </h3>
+        <table class="table" id="paymentTable" style="display:block;">
+          <thead><tr><th>Date</th><th>Party</th><th>Type</th><th>Amount</th><th>Notes</th><th>Delete</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETUP -->
+  <section id="setupTab" class="section">
+    <!-- COMPANY PROFILE -->
+    <div class="card">
+      <h2>Company Profile</h2>
+      <div class="row" style="margin-top:8px;">
+        <div class="col">
+          <label>Company Name (multi‑line)</label>
+          <textarea id="companyName" placeholder="e.g. AL QUDOOS FRUITS&#10;(Wholesale &amp; Commission Agent)"></textarea>
+        </div>
+        <div class="col">
+          <label>Address (multi‑line)</label>
+          <textarea id="companyAddress" placeholder="Street / Mandi&#10;City, PIN&#10;State"></textarea>
+        </div>
+        <div class="col">
+          <label>Phone / Contact (multi‑line)</label>
+          <textarea id="companyPhone" placeholder="Phone: 9xxxxxxxxx&#10;WhatsApp: 9xxxxxxxxx"></textarea>
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <div class="col">
+          <label>Logo (optional)</label>
+          <input type="file" id="companyLogoInput" accept="image/*">
+        </div>
+        <div class="col">
+          <label>Logo Preview</label>
+          <div class="logo-preview" id="companyLogoPreview">
+            <span class="small muted">No logo uploaded. Using default logo.jpg in prints.</span>
+          </div>
+        </div>
+        <div style="min-width:160px;align-self:flex-end;">
+          <button class="btn primary" id="saveCompanyBtn">Save Company Profile</button>
+        </div>
+      </div>
+      <p class="small muted" style="margin-top:8px;">Invoice and ledger headers use this company information and logo.</p>
+    </div>
+
+    <!-- PARTY SETUP -->
+    <div class="card">
+      <h2>Party Setup</h2>
+      <div class="row" style="margin-top:8px;">
+        <div class="col">
+          <label>Party Name</label>
+          <input id="partyName" type="text" placeholder="Enter party name">
+        </div>
+        <div class="col">
+          <label>Party Address</label>
+          <input id="partyAddress" type="text" placeholder="Enter party address">
+        </div>
+        <div class="col">
+          <label>Opening Balance</label>
+          <input id="partyOpening" type="text" placeholder="0">
+        </div>
+        <div style="min-width:170px;display:flex;gap:8px;align-items:center;">
+          <button class="btn primary" id="savePartyBtn">Save Party</button>
+          <button class="btn ghost" id="clearPartyBtn">Clear</button>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <h3>Saved Parties</h3>
+        <table class="table" id="partyTable">
+          <thead>
+            <tr><th>Party Name</th><th>Address</th><th>Opening Balance</th><th>Edit</th><th>Delete</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MASTER DATA with Show/Hide -->
+    <div class="card">
+      <h2>
+        Master Data (Variety / Type / Layer)
+        <button id="toggleMasterBtn" class="btn ghost btn-sm" style="float:right;">Hide</button>
+      </h2>
+      <div id="masterContent">
+        <div class="row" style="margin-top:8px;">
+          <div class="col">
+            <h3>Varieties</h3>
+            <div class="row" style="margin-top:6px;">
+              <div class="col">
+                <label>New Variety</label>
+                <input id="newVariety" type="text" placeholder="e.g. Kinnaur">
+              </div>
+              <div style="min-width:120px;">
+                <button class="btn primary" id="addVarietyBtn">Add</button>
+              </div>
+            </div>
+            <table class="table" id="varietyTable" style="margin-top:8px;">
+              <thead><tr><th>Variety</th><th>Delete</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="col">
+            <h3>Types</h3>
+            <div class="row" style="margin-top:6px;">
+              <div class="col">
+                <label>New Type</label>
+                <input id="newType" type="text" placeholder="e.g. Box">
+              </div>
+              <div style="min-width:120px;">
+                <button class="btn primary" id="addTypeBtn">Add</button>
+              </div>
+            </div>
+            <table class="table" id="typeTable" style="margin-top:8px;">
+              <thead><tr><th>Type</th><th>Delete</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="col">
+            <h3>Layers</h3>
+            <div class="row" style="margin-top:6px;">
+              <div class="col">
+                <label>New Layer</label>
+                <input id="newLayer" type="text" placeholder="e.g. 3 Layer">
+              </div>
+              <div style="min-width:120px;">
+                <button class="btn primary" id="addLayerBtn">Add</button>
+              </div>
+            </div>
+            <table class="table" id="layerTable" style="margin-top:8px;">
+              <thead><tr><th>Layer</th><th>Delete</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <p class="small muted" style="margin-top:10px;">Invoice VARIETY / TYPE / LAYER dropdowns use these lists.</p>
+      </div>
+    </div>
+
+    <!-- SEARCH + UTILITIES -->
+    <div class="card">
+      <h2>Search & Utilities</h2>
+      <div class="row">
+        <div class="col" style="flex:0.6;">
+          <label>Search Invoice No</label>
+          <input id="searchInvNo" type="text" placeholder="Enter invoice number (ALQ-...)" />
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+          <div>
+            <button class="btn primary" id="searchInvBtn">Search</button>
+            <button class="btn ghost" id="clearSearchBtn">Clear</button>
+          </div>
+          <div>
+            <button class="btn ghost" id="resetInvBtn_under_search">Reset Invoice No</button>
+          </div>
+        </div>
+      </div>
+      <div id="searchResult" class="search-result" style="display:none;"></div>
+
+      <div style="margin-top:16px;">
+        <h3>Data Tools</h3>
+        <button class="btn" id="backupBtn" style="background:#ffc107;color:#000;">Backup</button>
+        <button class="btn" id="importBtn" style="background:#66bb6a;color:#fff;">Import</button>
+        <button class="btn" id="resetAllBtn" style="background:#e53935;color:#fff;">Reset All</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div id="printArea"></div>
+
+</div><!-- appRoot -->
+
+<script>
+/* SINGLE-ACCOUNT STATE (multi-account removed) */
+const LS_KEY = 'alq_data_single_v1';
+
+function loadState(){
+  try {
+    return JSON.parse(localStorage.getItem(LS_KEY) || '{"nextSeq":1,"parties":{}, "globalInvoices":{}, "payments":[], "credits":{}, "backupCounter":0, "master":{"varieties":[],"types":[],"layers":[]}, "company":{"name":"","address":"","phone":"","logoData":""}}');
+  } catch(e){
+    return {"nextSeq":1,"parties":{},"globalInvoices":{},"payments":[],"credits":{},"backupCounter":0,"master":{"varieties":[],"types":[],"layers":[]},"company":{"name":"","address":"","phone":"","logoData":""}};
+  }
+}
+let state = null;
+function saveState(){
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+}
+function num(v){ const n = parseFloat(String(v||'').replace(/,/g,'')); return isNaN(n)?0:n; }
+function fmt2(v){ return (Math.round((v||0)*100)/100).toFixed(2); }
+function escapeHtml(s){ if(s===undefined||s===null) return ''; return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+function formatDisplayDate(isoStr){
+  if(!isoStr) return '';
+  const d = new Date(isoStr);
+  if(isNaN(d.getTime())) return isoStr;
+  const day = String(d.getDate()).padStart(2,'0');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const mon = months[d.getMonth()];
+  const yr = String(d.getFullYear()).slice(-2);
+  return day + '-' + mon + ',' + yr;
+}
+function nl2br(str){
+  return escapeHtml(str||'').replace(/\r?\n/g,'<br>');
+}
+
+/* LOGIN */
+document.getElementById('loginForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  const u = document.getElementById('user').value.trim();
+  const p = document.getElementById('pass').value.trim();
+  const errorBox = document.getElementById('errorBox');
+  const MY_USER = 'admin';
+  const MY_PASS = '1234';
+
+  if (u === MY_USER && p === MY_PASS) {
+    state = loadState();
+
+    if(!state.nextSeq) state.nextSeq = 1;
+    if(!state.parties) state.parties = {};
+    if(!state.globalInvoices) state.globalInvoices = {};
+    if(!state.payments) state.payments = [];
+    if(!state.credits) state.credits = {};
+    if(typeof state.backupCounter === 'undefined') state.backupCounter = 0;
+    if(!state.master) state.master = { varieties:[], types:[], layers:[] };
+    if(!state.company) state.company = { name:'', address:'', phone:'', logoData:'' };
+    Object.keys(state.parties).forEach(pn => {
+      if(typeof state.parties[pn].openingBalance === 'undefined') state.parties[pn].openingBalance = 0;
+    });
+
+    rebuildGlobalInvoices();
+
+    errorBox.style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appRoot').style.display = 'block';
+
+    renderParties();
+    renderMasterTables();
+    populateLedgerParties();
+    populatePaymentParties();
+    populateCreditParties();
+    refreshInvoiceUI();
+    renderPayments();
+    renderCreditRowsForSelected();
+    renderLedgerRows();
+    fillCompanyForm();
+  } else {
+    errorBox.style.display = 'block';
+  }
+});
+
+/* GLOBAL HELPERS */
+function rebuildGlobalInvoices(){
+  const rebuilt = {};
+  Object.keys(state.parties).forEach(p => {
+    const invs = state.parties[p].invoices || {};
+    Object.keys(invs).forEach(invNo => {
+      rebuilt[invNo] = Object.assign({}, invs[invNo], { invNo, party: p });
+    });
+  });
+  state.globalInvoices = Object.assign({}, state.globalInvoices || {}, rebuilt);
+  saveState();
+}
+const BACKUP_THRESHOLD = 10;
+function bumpBackupCounter(){
+  state.backupCounter = (state.backupCounter || 0) + 1;
+  saveState();
+  if(state.backupCounter >= BACKUP_THRESHOLD){
+    if(confirm('You have added several new records.\nDo you want to download a backup now?')){
+      downloadBackup();
+    }
+    state.backupCounter = 0;
+    saveState();
+  }
+}
+
+/* DOM REFS */
+const tabBtns = document.querySelectorAll('.tab-btn');
+
+const partyNameEl = document.getElementById('partyName');
+const partyAddressEl = document.getElementById('partyAddress');
+const partyOpeningEl = document.getElementById('partyOpening');
+const savePartyBtn = document.getElementById('savePartyBtn');
+const clearPartyBtn = document.getElementById('clearPartyBtn');
+const partyTableBody = document.querySelector('#partyTable tbody');
+
+const partySelect = document.getElementById('partySelect');
+const ledgerPartySelect = document.getElementById('ledgerPartySelect');
+const paymentPartySelect = document.getElementById('paymentPartySelect');
+const creditPartySelect = document.getElementById('creditPartySelect');
+
+const invNoEl = document.getElementById('invNo');
+const invDateEl = document.getElementById('invDate');
+const truckNoEl = document.getElementById('truckNo');
+const invBody = document.getElementById('invBody');
+const addRowBtn = document.getElementById('addRowBtn');
+const saveInvBtn = document.getElementById('saveInvBtn');
+const newInvBtn = document.getElementById('newInvBtn');
+const printInvBtn = document.getElementById('printInvBtn');
+const invNotice = document.getElementById('invNotice');
+const grandQtyInput = document.getElementById('grandQtyInput');
+const grandQtyFoot = document.getElementById('grandQtyFoot');
+const grandAmtFoot = document.getElementById('grandAmtFoot');
+
+const creditDateEl = document.getElementById('creditDate');
+const creditInvNoEl = document.getElementById('creditInvNo');
+const creditQtyEl = document.getElementById('creditQty');
+const creditAmountEl = document.getElementById('creditAmount');
+const creditTotalEl = document.getElementById('creditTotal');
+const saveCreditBtn = document.getElementById('saveCreditBtn');
+const creditNotice = document.getElementById('creditNotice');
+const creditTableBody = document.querySelector('#creditTable tbody');
+
+const ledgerTableBody = document.querySelector('#ledgerTable tbody');
+const ledgerTotalQty = document.getElementById('ledgerTotalQty');
+const ledgerTotalDebit = document.getElementById('ledgerTotalDebit');
+const ledgerTotalCredit = document.getElementById('ledgerTotalCredit');
+const ledgerFinalBalance = document.getElementById('ledgerFinalBalance');
+const loadLedgerBtn = document.getElementById('loadLedgerBtn');
+const printLedgerBtn = document.getElementById('printLedgerBtn');
+const ledgerFromDateEl = document.getElementById('ledgerFromDate');
+const ledgerToDateEl = document.getElementById('ledgerToDate');
+
+const paymentDateEl = document.getElementById('paymentDate');
+const paymentAmountEl = document.getElementById('paymentAmount');
+const paymentNotesEl = document.getElementById('paymentNotes');
+const paymentTypeEl = document.getElementById('paymentType');
+const recordPaymentBtn = document.getElementById('recordPaymentBtn');
+const paymentTableBody = document.querySelector('#paymentTable tbody');
+
+const searchInvNoEl = document.getElementById('searchInvNo');
+const searchInvBtn = document.getElementById('searchInvBtn');
+const clearSearchBtn = document.getElementById('clearSearchBtn');
+const resetInvBtn_under_search = document.getElementById('resetInvBtn_under_search');
+const searchResultEl = document.getElementById('searchResult');
+
+const printArea = document.getElementById('printArea');
+
+const showPaymentsBtn = document.getElementById('showPaymentsBtn');
+const hidePaymentsBtn = document.getElementById('hidePaymentsBtn');
+const paymentTable = document.getElementById('paymentTable');
+
+const backupBtn = document.getElementById('backupBtn');
+const importBtn = document.getElementById('importBtn');
+const resetAllBtn = document.getElementById('resetAllBtn');
+
+const newVarietyEl = document.getElementById('newVariety');
+const newTypeEl = document.getElementById('newType');
+const newLayerEl = document.getElementById('newLayer');
+const addVarietyBtn = document.getElementById('addVarietyBtn');
+const addTypeBtn = document.getElementById('addTypeBtn');
+const addLayerBtn = document.getElementById('addLayerBtn');
+const varietyTableBody = document.querySelector('#varietyTable tbody');
+const typeTableBody = document.querySelector('#typeTable tbody');
+const layerTableBody = document.querySelector('#layerTable tbody');
+
+/* Company profile refs */
+const companyNameEl = document.getElementById('companyName');
+const companyAddressEl = document.getElementById('companyAddress');
+const companyPhoneEl = document.getElementById('companyPhone');
+const companyLogoInput = document.getElementById('companyLogoInput');
+const companyLogoPreview = document.getElementById('companyLogoPreview');
+const saveCompanyBtn = document.getElementById('saveCompanyBtn');
+
+/* Tabs */
+tabBtns.forEach(btn => btn.addEventListener('click', () => {
+  const id = btn.dataset.show;
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if(el) el.classList.add('active');
+  tabBtns.forEach(t => t.classList.toggle('active', t.dataset.show === id));
+  if(!state) return;
+  if(id === 'ledgerTab') { populateLedgerParties(); renderLedgerRows(); }
+  if(id === 'paymentTab') { populatePaymentParties(); renderPayments(); }
+  if(id === 'creditBillTab') { populateCreditParties(); renderCreditRowsForSelected(); }
+  if(id === 'setupTab') { renderParties(); renderMasterTables(); fillCompanyForm(); }
+}));
+
+/* Master Show/Hide */
+const toggleMasterBtn = document.getElementById('toggleMasterBtn');
+const masterContent = document.getElementById('masterContent');
+if(toggleMasterBtn && masterContent){
+  toggleMasterBtn.addEventListener('click', () => {
+    if(masterContent.style.display === 'none'){
+      masterContent.style.display = 'block';
+      toggleMasterBtn.textContent = 'Hide';
+    } else {
+      masterContent.style.display = 'none';
+      toggleMasterBtn.textContent = 'Show';
+    }
+  });
+}
+
+/* Company profile */
+function fillCompanyForm(){
+  companyNameEl.value = state.company.name || '';
+  companyAddressEl.value = state.company.address || '';
+  companyPhoneEl.value = state.company.phone || '';
+  renderCompanyLogoPreview();
+}
+function renderCompanyLogoPreview(){
+  companyLogoPreview.innerHTML = '';
+  if(state.company.logoData){
+    const img = document.createElement('img');
+    img.src = state.company.logoData;
+    img.alt = 'Company Logo';
+    companyLogoPreview.appendChild(img);
+  } else {
+    const span = document.createElement('span');
+    span.className = 'small muted';
+    span.textContent = 'No logo uploaded. Using default logo.jpg in prints.';
+    companyLogoPreview.appendChild(span);
+  }
+}
+companyLogoInput.addEventListener('change', function(){
+  const file = this.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    state.company.logoData = e.target.result;
+    saveState();
+    renderCompanyLogoPreview();
+  };
+  reader.readAsDataURL(file);
+});
+saveCompanyBtn.addEventListener('click', () => {
+  state.company.name = companyNameEl.value || '';
+  state.company.address = companyAddressEl.value || '';
+  state.company.phone = companyPhoneEl.value || '';
+  saveState();
+  alert('Company profile saved.');
+});
+
+/* Master Data */
+function renderMasterTables(){
+  varietyTableBody.innerHTML = '';
+  (state.master.varieties || []).forEach((v,i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td style="text-align:left;">${escapeHtml(v)}</td>
+                    <td><button class="action-del" data-i="${i}" data-kind="var">X</button></td>`;
+    varietyTableBody.appendChild(tr);
+  });
+  typeTableBody.innerHTML = '';
+  (state.master.types || []).forEach((v,i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td style="text-align:left;">${escapeHtml(v)}</td>
+                    <td><button class="action-del" data-i="${i}" data-kind="type">X</button></td>`;
+    typeTableBody.appendChild(tr);
+  });
+  layerTableBody.innerHTML = '';
+  (state.master.layers || []).forEach((v,i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td style="text-align:left;">${escapeHtml(v)}</td>
+                    <td><button class="action-del" data-i="${i}" data-kind="layer">X</button></td>`;
+    layerTableBody.appendChild(tr);
+  });
+
+  varietyTableBody.querySelectorAll('button.action-del').forEach(btn=>{
+    btn.onclick = () => {
+      const idx = Number(btn.dataset.i);
+      state.master.varieties.splice(idx,1);
+      saveState();
+      renderMasterTables();
+      renderInvRows();
+    };
+  });
+  typeTableBody.querySelectorAll('button.action-del').forEach(btn=>{
+    btn.onclick = () => {
+      const idx = Number(btn.dataset.i);
+      state.master.types.splice(idx,1);
+      saveState();
+      renderMasterTables();
+      renderInvRows();
+    };
+  });
+  layerTableBody.querySelectorAll('button.action-del').forEach(btn=>{
+    btn.onclick = () => {
+      const idx = Number(btn.dataset.i);
+      state.master.layers.splice(idx,1);
+      saveState();
+      renderMasterTables();
+      renderInvRows();
+    };
+  });
+}
+addVarietyBtn.addEventListener('click', () => {
+  if(!state) return;
+  const v = (newVarietyEl.value||'').trim();
+  if(!v) return;
+  state.master.varieties = state.master.varieties || [];
+  if(!state.master.varieties.includes(v)) state.master.varieties.push(v);
+  newVarietyEl.value='';
+  saveState();
+  renderMasterTables();
+  renderInvRows();
+});
+addTypeBtn.addEventListener('click', () => {
+  if(!state) return;
+  const v = (newTypeEl.value||'').trim();
+  if(!v) return;
+  state.master.types = state.master.types || [];
+  if(!state.master.types.includes(v)) state.master.types.push(v);
+  newTypeEl.value='';
+  saveState();
+  renderMasterTables();
+  renderInvRows();
+});
+addLayerBtn.addEventListener('click', () => {
+  if(!state) return;
+  const v = (newLayerEl.value||'').trim();
+  if(!v) return;
+  state.master.layers = state.master.layers || [];
+  if(!state.master.layers.includes(v)) state.master.layers.push(v);
+  newLayerEl.value='';
+  saveState();
+  renderMasterTables();
+  renderInvRows();
+});
+
+/* Parties */
+function renderParties(){
+  partyTableBody.innerHTML = '';
+  Object.keys(state.parties).forEach(name => {
+    const p = state.parties[name];
+    const tr = document.createElement('tr');
+    const tdName = document.createElement('td'); tdName.style.textAlign='left'; tdName.textContent = name;
+    const tdAddr = document.createElement('td'); tdAddr.style.textAlign='left'; tdAddr.textContent = p.address || '';
+    const tdOB  = document.createElement('td'); tdOB.textContent = fmt2(p.openingBalance || 0);
+    const tdEdit = document.createElement('td');
+    const tdDel = document.createElement('td');
+    const editBtn = document.createElement('button'); editBtn.className='action-edit'; editBtn.textContent='Edit';
+    editBtn.onclick = () => {
+      partyNameEl.value = name;
+      partyAddressEl.value = p.address || '';
+      partyOpeningEl.value = p.openingBalance || 0;
+      delete state.parties[name];
+      saveState();
+      renderParties();
+    };
+    const delBtn = document.createElement('button'); delBtn.className='action-del'; delBtn.textContent='Delete';
+    delBtn.onclick = () => {
+      if(!confirm('Delete party and all its invoices, payments, credits?')) return;
+      if(state.parties[name] && state.parties[name].invoices){
+        Object.keys(state.parties[name].invoices).forEach(invNo => {
+          if(state.globalInvoices[invNo]) delete state.globalInvoices[invNo];
+        });
+      }
+      delete state.parties[name];
+      state.payments = (state.payments||[]).filter(p => p.party !== name);
+      if(state.credits && state.credits[name]) delete state.credits[name];
+      saveState();
+      renderParties();
+      renderPayments();
+      renderLedgerRows();
+      renderCreditRowsForSelected();
+    };
+    tdEdit.appendChild(editBtn);
+    tdDel.appendChild(delBtn);
+    tr.append(tdName, tdAddr, tdOB, tdEdit, tdDel);
+    partyTableBody.appendChild(tr);
+  });
+  populatePartySelect();
+  populateLedgerParties();
+  populatePaymentParties();
+  populateCreditParties();
+}
+function saveParty(){
+  const name = (partyNameEl.value||'').trim();
+  const addr = (partyAddressEl.value||'').trim();
+  const opening = num(partyOpeningEl.value);
+  if(!name){ alert('Enter party name'); return; }
+  if(!addr){ alert('Enter party address'); return; }
+  const existingInvoices = (state.parties[name] && state.parties[name].invoices) ? state.parties[name].invoices : {};
+  state.parties[name] = { address: addr, openingBalance: opening, invoices: existingInvoices };
+  saveState();
+  rebuildGlobalInvoices();
+  partyNameEl.value='';
+  partyAddressEl.value='';
+  partyOpeningEl.value='';
+  renderParties();
+}
+savePartyBtn.addEventListener('click', () => { if(state) saveParty(); });
+clearPartyBtn.addEventListener('click', () => {
+  partyNameEl.value='';
+  partyAddressEl.value='';
+  partyOpeningEl.value='';
+});
+function populatePartySelect(){
+  partySelect.innerHTML = '<option value="">-- choose party --</option>';
+  Object.keys(state.parties).forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p;
+    opt.textContent = p;
+    partySelect.appendChild(opt);
+  });
+}
+function populateLedgerParties(){
+  ledgerPartySelect.innerHTML = '<option value="">-- choose party --</option>';
+  Object.keys(state.parties).forEach(p => {
+    const opt = document.createElement('option');
+    opt.value=p;
+    opt.textContent=p;
+    ledgerPartySelect.appendChild(opt);
+  });
+}
+function populatePaymentParties(){
+  paymentPartySelect.innerHTML = '<option value="">-- choose party --</option>';
+  Object.keys(state.parties).forEach(p => {
+    const opt = document.createElement('option');
+    opt.value=p;
+    opt.textContent=p;
+    paymentPartySelect.appendChild(opt);
+  });
+}
+function populateCreditParties(){
+  creditPartySelect.innerHTML = '<option value="">-- choose party --</option>';
+  Object.keys(state.parties).forEach(p => {
+    const opt = document.createElement('option');
+    opt.value=p;
+    opt.textContent=p;
+    creditPartySelect.appendChild(opt);
+  });
+}
+
+/* Invoice rows */
+let invRows = [];
+function refreshInvoiceUI(){
+  populatePartySelect();
+  invNoEl.value = `ALQ-${state.nextSeq || 1}`;
+  invDateEl.value = new Date().toISOString().slice(0,10);
+  grandQtyInput.value = 0;
+  invRows = [];
+  addInvRow();
+  renderInvRows();
+}
+function addInvRow(){
+  invRows.push({ khata:'', variety:'', type:'', layer:'', qty:0, rate:0, total:0 });
+  renderInvRows();
+}
+addRowBtn.addEventListener('click', () => { if(state) addInvRow(); });
+invBody.addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    if(!state) return;
+    addInvRow();
+    const lastRow = invBody.querySelector('tr:last-child input, tr:last-child select');
+    if(lastRow) lastRow.focus();
+  }
+});
+function recalcTotals(){
+  let sumQty = 0, sumAmt = 0;
+  invRows.forEach(r => {
+    sumQty += num(r.qty);
+    sumAmt += num(r.total);
+  });
+  grandQtyInput.value = sumQty;
+  grandQtyFoot.textContent = sumQty;
+  grandAmtFoot.textContent = fmt2(sumAmt);
+}
+function buildSelect(options, selectedVal, i, key){
+  const sel = document.createElement('select');
+  sel.dataset.i = i;
+  sel.dataset.k = key;
+  const blank = document.createElement('option');
+  blank.value = '';
+  blank.textContent = '';
+  sel.appendChild(blank);
+  (options || []).forEach(v=>{
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = v;
+    if(v === selectedVal) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  return sel;
+}
+function renderInvRows(){
+  invBody.innerHTML = '';
+  invRows.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    const tdKhata = document.createElement('td');
+    const khInp = document.createElement('input');
+    khInp.value = r.khata; khInp.dataset.i=i; khInp.dataset.k='khata';
+    tdKhata.appendChild(khInp);
+
+    const tdVar = document.createElement('td');
+    const selVar = buildSelect(state.master.varieties, r.variety, i, 'variety');
+    tdVar.appendChild(selVar);
+
+    const tdType = document.createElement('td');
+    const selType = buildSelect(state.master.types, r.type, i, 'type');
+    tdType.appendChild(selType);
+
+    const tdLayer = document.createElement('td');
+    const selLayer = buildSelect(state.master.layers, r.layer, i, 'layer');
+    tdLayer.appendChild(selLayer);
+
+    const tdQty = document.createElement('td');
+    const qtyInp = document.createElement('input');
+    qtyInp.value = r.qty; qtyInp.dataset.i=i; qtyInp.dataset.k='qty';
+    tdQty.appendChild(qtyInp);
+
+    const tdRate = document.createElement('td');
+    const rateInp = document.createElement('input');
+    rateInp.value = r.rate; rateInp.dataset.i=i; rateInp.dataset.k='rate';
+    tdRate.appendChild(rateInp);
+
+    const tdTotal = document.createElement('td');
+    tdTotal.textContent = fmt2(r.total);
+    const tdAct = document.createElement('td');
+    const delBtn = document.createElement('button');
+    delBtn.className='action-del'; delBtn.textContent='X'; delBtn.dataset.i=i;
+    tdAct.appendChild(delBtn);
+
+    tr.append(tdKhata, tdVar, tdType, tdLayer, tdQty, tdRate, tdTotal, tdAct);
+    invBody.appendChild(tr);
+  });
+
+  invBody.querySelectorAll('input,select').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const i = Number(inp.dataset.i);
+      const k = inp.dataset.k;
+      if(Number.isNaN(i) || !k) return;
+      invRows[i][k] = inp.value;
+      const q = num(invRows[i].qty);
+      const r = num(invRows[i].rate);
+      invRows[i].total = q * r;
+      const row = invBody.rows[i];
+      if(row) row.cells[6].textContent = fmt2(invRows[i].total);
+      recalcTotals();
+    });
+  });
+  invBody.querySelectorAll('button.action-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = Number(btn.dataset.i);
+      if(Number.isNaN(i)) return;
+      invRows.splice(i,1);
+      renderInvRows();
+      recalcTotals();
+    });
+  });
+  recalcTotals();
+}
+
+/* Save invoice */
+saveInvBtn.addEventListener('click', () => {
+  if(!state){ alert('Login first'); return; }
+  const party = (partySelect.value||'').trim();
+  const invNoRaw = (invNoEl.value||'').trim();
+  const invNo = invNoRaw || `ALQ-${state.nextSeq || 1}`;
+  const date = invDateEl.value || new Date().toISOString().slice(0,10);
+  const truck = (truckNoEl.value||'').trim();
+  if(!party){ alert('Choose a party'); return; }
+  if(invRows.length === 0){ alert('Add at least one row'); return; }
+
+  const rowsCopy = invRows.map(r => ({
+    khata: r.khata,
+    variety: r.variety,
+    type: r.type,
+    layer: r.layer,
+    qty: num(r.qty),
+    rate: num(r.rate),
+    total: num(r.total)
+  }));
+  const grandQty = rowsCopy.reduce((a,b)=>a+num(b.qty),0);
+  const grandAmt = rowsCopy.reduce((a,b)=>a + num(b.total),0);
+
+  const invObj = { invNo, party, date, truck, rows: rowsCopy, grandQty, grandAmt, savedAt: new Date().toISOString() };
+  state.parties[party] = state.parties[party] || { address:'', openingBalance:0, invoices:{} };
+  state.parties[party].invoices = state.parties[party].invoices || {};
+  state.parties[party].invoices[invNo] = invObj;
+  state.globalInvoices = state.globalInvoices || {};
+  state.globalInvoices[invNo] = Object.assign({}, invObj, { party });
+
+  const m = invNo.match(/^ALQ-(\d+)$/i);
+  if(m){
+    const n = parseInt(m[1],10);
+    if(!isNaN(n) && n >= state.nextSeq) state.nextSeq = n+1;
+  }
+  bumpBackupCounter();
+  saveState();
+  rebuildGlobalInvoices();
+
+  invNotice.style.display = 'block';
+  invNotice.textContent = 'Invoice saved.';
+  invNoEl.value = `ALQ-${state.nextSeq}`;
+  invDateEl.value = '';
+  truckNoEl.value = '';
+  invRows = [];
+  addInvRow();
+  renderInvRows();
+  populateLedgerParties();
+  populatePaymentParties();
+  populateCreditParties();
+});
+newInvBtn.addEventListener('click', () => {
+  if(!state) return;
+  invNoEl.value = `ALQ-${state.nextSeq}`;
+  invDateEl.value = '';
+  truckNoEl.value = '';
+  invRows = [];
+  addInvRow();
+  renderInvRows();
+  invNotice.style.display = 'none';
+});
+
+/* Search invoice */
+function renderSearchResult(invObj){
+  if(!invObj){
+    searchResultEl.style.display='none';
+    searchResultEl.innerHTML='';
+    return;
+  }
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <b>Invoice:</b> ${escapeHtml(invObj.invNo || '')}<br>
+      <b>Party:</b> ${escapeHtml(invObj.party || '')}<br>
+      <b>Date:</b> ${escapeHtml(formatDisplayDate(invObj.date || ''))}<br>
+      <b>Truck:</b> ${escapeHtml(invObj.truck || '')}
+    </div>
+    <div><button class="btn primary" id="openInEditorBtn">Open in Invoice Tab</button></div>
+  </div>`;
+  html += `<table style="width:100%;margin-top:8px;border-collapse:collapse;" border="1" cellpadding="6">
+    <thead><tr><th>KHATA</th><th>VARIETY</th><th>TYPE</th><th>LAYER</th><th>QTY</th><th>RATE</th><th>TOTAL</th></tr></thead><tbody>`;
+  const rows = invObj.rows || [];
+  let sumQty = 0, sumAmt = 0;
+  rows.forEach(r => {
+    html += `<tr><td>${escapeHtml(r.khata)}</td><td>${escapeHtml(r.variety)}</td><td>${escapeHtml(r.type)}</td><td>${escapeHtml(r.layer)}</td><td>${r.qty}</td><td>${fmt2(r.rate)}</td><td>${fmt2(r.total)}</td></tr>`;
+    sumQty += num(r.qty); sumAmt += num(r.total);
+  });
+  html += `</tbody><tfoot><tr><td colspan="4" style="text-align:right"><b>Totals</b></td><td>${sumQty}</td><td></td><td>${fmt2(sumAmt)}</td></tr></tfoot></table>`;
+  searchResultEl.innerHTML = html;
+  searchResultEl.style.display = 'block';
+
+  const openBtn = document.getElementById('openInEditorBtn');
+  if(openBtn){
+    openBtn.onclick = () => {
+      invRows = (invObj.rows || []).map(r => ({
+        khata:r.khata, variety:r.variety, type:r.type, layer:r.layer,
+        qty:r.qty, rate:r.rate, total:r.total
+      }));
+      partySelect.value = invObj.party || '';
+      invNoEl.value = invObj.invNo || '';
+      invDateEl.value = invObj.date || '';
+      truckNoEl.value = invObj.truck || '';
+      renderInvRows();
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById('newInvoice').classList.add('active');
+      tabBtns.forEach(t => t.classList.toggle('active', t.dataset.show === 'newInvoice'));
+    };
+  }
+}
+searchInvBtn.addEventListener('click', () => {
+  if(!state){ alert('Login first'); return; }
+  const q = (searchInvNoEl.value||'').trim();
+  if(!q){ alert('Enter invoice no'); return; }
+  rebuildGlobalInvoices();
+  let gi = state.globalInvoices[q];
+  if(!gi){
+    for(const p of Object.keys(state.parties)){
+      const invs = state.parties[p].invoices || {};
+      if(invs[q]){
+        gi = Object.assign({}, invs[q], { invNo: q, party: p });
+        break;
+      }
+    }
+  } else {
+    gi = Object.assign({}, gi, { invNo: q, party: gi.party || (gi.partyName || '') });
+  }
+  if(!gi){
+    renderSearchResult(null);
+    alert('Invoice not found');
+    return;
+  }
+  renderSearchResult(gi);
+});
+clearSearchBtn.addEventListener('click', ()=> {
+  searchInvNoEl.value = '';
+  renderSearchResult(null);
+});
+resetInvBtn_under_search.addEventListener('click', () => {
+  if(!state){ alert('Login first'); return; }
+  if(!confirm('Reset invoice sequence to 1? This will set next invoice to ALQ-1.')) return;
+  state.nextSeq = 1;
+  saveState();
+  alert('Invoice sequence reset. Next invoice: ALQ-1');
+});
+
+/* Credit */
+function recalcCreditTotal(){
+  const amt = num(creditAmountEl.value);
+  creditTotalEl.value = fmt2(amt);
+}
+creditAmountEl.addEventListener('input', recalcCreditTotal);
+saveCreditBtn.addEventListener('click', () => {
+  if(!state){ alert('Login first'); return; }
+  const party = (creditPartySelect.value||'').trim();
+  const date = (creditDateEl.value || new Date().toISOString().slice(0,10)).trim();
+  const invNo = (creditInvNoEl.value||'').trim();
+  const qty = num(creditQtyEl.value);
+  const amount = num(creditAmountEl.value);
+  if(!party){ alert('Select a party'); return; }
+  if(!invNo){ alert('Enter invoice no.'); return; }
+  if(amount <= 0){ alert('Enter a valid credit amount'); return; }
+  state.credits[party] = state.credits[party] || [];
+  state.credits[party].push({ date, invNo, qty, amount, id:'C-'+Date.now() });
+  bumpBackupCounter();
+  saveState();
+  creditNotice.style.display = 'block';
+  creditNotice.textContent = 'Credit bill saved.';
+  creditDateEl.value=''; creditInvNoEl.value=''; creditQtyEl.value=''; creditAmountEl.value=''; creditTotalEl.value='';
+  renderCreditRowsForSelected();
+  renderLedgerRows();
+});
+creditPartySelect.addEventListener('change', renderCreditRowsForSelected);
+function renderCreditRowsForSelected(){
+  creditTableBody.innerHTML = '';
+  if(!state) return;
+  const party = (creditPartySelect.value||'').trim();
+  if(!party || !state.credits[party]) return;
+  state.credits[party].forEach((c,idx)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${escapeHtml(formatDisplayDate(c.date||''))}</td>
+      <td>${escapeHtml(c.invNo||'')}</td>
+      <td>${c.qty||0}</td>
+      <td>${fmt2(c.amount||0)}</td>
+      <td><button class="action-del" data-i="${idx}">X</button></td>
+    `;
+    tr.querySelector('button').onclick = () => {
+      if(!confirm('Delete this credit bill?')) return;
+      state.credits[party].splice(idx,1);
+      if(state.credits[party].length===0) delete state.credits[party];
+      saveState();
+      renderCreditRowsForSelected();
+      renderLedgerRows();
+    };
+    creditTableBody.appendChild(tr);
+  });
+}
+
+/* Payments */
+showPaymentsBtn.addEventListener('click', () => {
+  paymentTable.style.display = 'table';
+  showPaymentsBtn.style.display = 'none';
+  hidePaymentsBtn.style.display = 'inline-block';
+  if(state) renderPayments();
+});
+hidePaymentsBtn.addEventListener('click', () => {
+  paymentTable.style.display = 'none';
+  hidePaymentsBtn.style.display = 'none';
+  showPaymentsBtn.style.display = 'inline-block';
+});
+function renderPayments(){
+  paymentTableBody.innerHTML = '';
+  (state.payments || []).forEach((p, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${escapeHtml(formatDisplayDate(p.date))}</td><td>${escapeHtml(p.party)}</td><td>${escapeHtml(p.type||'credit')}</td><td>${fmt2(p.amount)}</td><td>${escapeHtml(p.notes||'')}</td><td><button class="action-del" data-i="${idx}">X</button></td>`;
+    tr.querySelector('button').onclick = () => {
+      if(!confirm('Delete this payment?')) return;
+      state.payments.splice(idx,1);
+      saveState();
+      renderPayments();
+      renderLedgerRows();
+    };
+    paymentTableBody.appendChild(tr);
+  });
+}
+recordPaymentBtn.addEventListener('click', () => {
+  if(!state){ alert('Login first'); return; }
+  const party = (paymentPartySelect.value||'').trim();
+  const date = (paymentDateEl.value || new Date().toISOString().slice(0,10)).trim();
+  const amount = num(paymentAmountEl.value);
+  const notes = (paymentNotesEl.value||'').trim();
+  const type = (paymentTypeEl.value || 'credit');
+  if(!party){ alert('Select a party'); return; }
+  if(amount <= 0){ alert('Enter a valid payment amount'); return; }
+  state.payments = state.payments || [];
+  state.payments.push({ party, date, amount, notes, type, id:'P-'+Date.now() });
+  bumpBackupCounter();
+  saveState();
+  paymentDateEl.value=''; paymentAmountEl.value=''; paymentNotesEl.value=''; paymentTypeEl.value='credit';
+  renderPayments();
+  renderLedgerRows();
+});
+
+/* Ledger */
+function inRange(dateStr, fromStr, toStr){
+  if(!fromStr && !toStr) return true;
+  const d = new Date(dateStr||'1970-01-01').getTime();
+  if(fromStr){
+    const f = new Date(fromStr).getTime();
+    if(d < f) return false;
+  }
+  if(toStr){
+    const t = new Date(toStr).getTime();
+    if(d > t) return false;
+  }
+  return true;
+}
+function renderLedgerRows(){
+  ledgerTableBody.innerHTML='';
+  if(!state) return;
+  const party = (ledgerPartySelect.value||'').trim();
+  const fromDate = ledgerFromDateEl.value;
+  const toDate = ledgerToDateEl.value;
+  if(!party || !state.parties[party]){
+    ledgerTotalQty.textContent='0';
+    ledgerTotalDebit.textContent='0.00';
+    ledgerTotalCredit.textContent='0.00';
+    ledgerFinalBalance.textContent='0.00';
+    return;
+  }
+  const openingBalance = num(state.parties[party].openingBalance||0);
+  const invEntries = Object.entries(state.parties[party].invoices || {}).map(([invNo,inv])=>({
+    type:'invoice',
+    date:inv.date||inv.savedAt||'',
+    desc:invNo,
+    grandQty:num(inv.grandQty || (inv.rows||[]).reduce((a,b)=>a+num(b.qty),0)),
+    debit:num(inv.grandAmt || (inv.rows||[]).reduce((a,b)=>a+num(b.total),0)),
+    credit:0,
+    sortDate:new Date(inv.date||inv.savedAt||new Date())
+  }));
+  const creditEntries = (state.credits[party]||[]).map(c=>({
+    type:'creditbill',
+    date:c.date||'',
+    desc:c.invNo||'Credit Bill',
+    grandQty:num(c.qty||0),
+    debit:0,
+    credit:num(c.amount||0),
+    sortDate:new Date(c.date||new Date())
+  }));
+  const payEntries = (state.payments||[]).filter(p=>p.party===party).map(p=>{
+    const isCredit = (p.type||'credit')==='credit';
+    return{
+      type:'payment',
+      date:p.date||'',
+      desc:p.notes?`Payment (${p.notes})`:'Payment',
+      grandQty:0,
+      debit:isCredit?0:num(p.amount),
+      credit:isCredit?num(p.amount):0,
+      sortDate:new Date(p.date||new Date())
+    };
+  });
+  const allEntries = invEntries.concat(creditEntries).concat(payEntries).sort((a,b)=>{
+    const da=a.sortDate.getTime(), db=b.sortDate.getTime();
+    if(da!==db) return da-db;
+    const order={invoice:1,creditbill:2,payment:3};
+    return (order[a.type]||9)-(order[b.type]||9);
+  });
+  let runningBalance=openingBalance;
+  let totalQty=0,totalDebit=0,totalCredit=0;
+  const obRow=document.createElement('tr');
+  obRow.innerHTML=`
+    <td></td>
+    <td style="text-align:left;">Opening Balance</td>
+    <td>0</td>
+    <td>${openingBalance>=0?fmt2(openingBalance):'0.00'}</td>
+    <td>${openingBalance<0?fmt2(-openingBalance):'0.00'}</td>
+    <td>${fmt2(runningBalance)}</td>`;
+  ledgerTableBody.appendChild(obRow);
+  allEntries.forEach(entry=>{
+    const dateStr=entry.date||'';
+    if(!inRange(dateStr,fromDate,toDate)) return;
+    runningBalance+=(entry.debit-entry.credit);
+    totalQty+=num(entry.grandQty||0);
+    totalDebit+=num(entry.debit);
+    totalCredit+=num(entry.credit);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${escapeHtml(formatDisplayDate(dateStr))}</td>
+      <td style="text-align:left">${escapeHtml(entry.desc)}</td>
+      <td>${entry.grandQty || 0}</td>
+      <td>${fmt2(entry.debit)}</td>
+      <td>${fmt2(entry.credit)}</td>
+      <td>${fmt2(runningBalance)}</td>`;
+    ledgerTableBody.appendChild(tr);
+  });
+  ledgerTotalQty.textContent=totalQty;
+  ledgerTotalDebit.textContent=fmt2(totalDebit+(openingBalance>0?openingBalance:0));
+  ledgerTotalCredit.textContent=fmt2(totalCredit+(openingBalance<0?-openingBalance:0));
+  ledgerFinalBalance.textContent=fmt2(runningBalance);
+}
+loadLedgerBtn.addEventListener('click',renderLedgerRows);
+
+/* Backup / Import / Reset */
+function downloadBackup(){
+  const dataStr=JSON.stringify(state,null,2);
+  const blob=new Blob([dataStr],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const ts=new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+  a.href=url;a.download=`alq-invoice-backup-${ts}.json`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function importBackup(){
+  const input=document.createElement('input');
+  input.type='file';input.accept='.json,application/json';
+  input.onchange=function(e){
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=function(evt){
+      try{
+        const data=JSON.parse(evt.target.result);
+        if(!data || typeof data!=='object'){ alert('Invalid backup file'); return;}
+        if(!confirm('Importing backup will replace current data. Continue?')) return;
+        localStorage.setItem(LS_KEY,JSON.stringify(data));
+        alert('Backup imported. App will reload.');
+        location.reload();
+      }catch(err){ alert('Error reading backup: '+err.message);}
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+function resetAllData(){
+  if(!confirm('This will delete ALL data. Continue?')) return;
+  localStorage.removeItem(LS_KEY);
+  location.reload();
+}
+backupBtn.addEventListener('click',()=>{ if(state) downloadBackup(); });
+importBtn.addEventListener('click',importBackup);
+resetAllBtn.addEventListener('click',resetAllData);
+
+/* Print invoice with two-column header */
+printInvBtn.addEventListener('click',()=>{
+  if(!state){ alert('Login first'); return; }
+  const party=partySelect.value;
+  const invNo=invNoEl.value||'ALQ-NEW';
+  const invObj=state.globalInvoices[invNo]||{party,date:invDateEl.value,truck:truckNoEl.value,rows:invRows};
+  const rows=(invObj.rows||invRows).filter(r=>num(r.qty)!==0||num(r.total)!==0);
+  let grandQty=0,grandAmt=0;
+  rows.forEach(r=>{grandQty+=num(r.qty);grandAmt+=num(r.total);});
+
+  const partyKey = invObj.party || party;
+  const partyObj = state.parties[partyKey] || {};
+  const partyAddr = partyObj.address || '';
+
+  const logoHtml = state.company.logoData
+    ? `<img src="${state.company.logoData}" style="height:60px;margin-right:10px;" alt="Company Logo">`
+    : `<img src="logo.jpg" style="height:60px;margin-right:10px;" alt="Company Logo">`;
+
+  let html=`
+    <div style="border:1px solid #000;padding:8px 10px;margin-bottom:6px;">
+      <div style="display:flex;align-items:center;">
+        ${logoHtml}
+        <div style="line-height:1.4;">
+          <div style="font-size:18px;font-weight:700;">${nl2br(state.company.name || 'AL QUDOOS FRUITS')}</div>
+          <div style="font-size:12px;">${nl2br(state.company.address || '')}</div>
+          <div style="font-size:12px;">${nl2br(state.company.phone || '')}</div>
+        </div>
+      </div>
+    </div>
+
+    <table style="width:100%;border-collapse:collapse;margin-bottom:8px;">
+      <tr>
+        <td style="width:60%;vertical-align:top;padding:4px 0;">
+          <b>Party:</b> ${escapeHtml(partyKey)}<br>
+          <b>Address:</b> ${escapeHtml(partyAddr)}
+        </td>
+        <td style="width:40%;vertical-align:top;padding:4px 0;text-align:right;">
+          <b>Invoice No:</b> ${escapeHtml(invNo)}<br>
+          <b>Date:</b> ${escapeHtml(formatDisplayDate(invObj.date||''))}<br>
+          <b>Truck No:</b> ${escapeHtml(invObj.truck||'')}
+        </td>
+      </tr>
+    </table>`;
+
+  html+=`<table style="border-collapse:collapse;margin-top:4px;width:100%;border:0;">
+    <thead><tr>
+      <th style="text-align:left;padding:4px 6px;">KHATA</th>
+      <th style="text-align:left;padding:4px 6px;">VARIETY</th>
+      <th style="text-align:left;padding:4px 6px;">TYPE</th>
+      <th style="text-align:left;padding:4px 6px;">LAYER</th>
+      <th style="text-align:right;padding:4px 6px;">QTY</th>
+      <th style="text-align:right;padding:4px 6px;">RATE</th>
+      <th style="text-align:right;padding:4px 6px;">TOTAL</th>
+    </tr></thead><tbody>`;
+  rows.forEach(r=>{
+    html+=`<tr>
+      <td style="padding:4px 6px;">${escapeHtml(r.khata)}</td>
+      <td style="padding:4px 6px;">${escapeHtml(r.variety)}</td>
+      <td style="padding:4px 6px;">${escapeHtml(r.type)}</td>
+      <td style="padding:4px 6px;">${escapeHtml(r.layer)}</td>
+      <td style="padding:4px 6px;text-align:right;">${num(r.qty)}</td>
+      <td style="padding:4px 6px;text-align:right;">${fmt2(r.rate)}</td>
+      <td style="padding:4px 6px;text-align:right;">${fmt2(r.total)}</td>
+    </tr>`;
+  });
+  html+=`</tbody></table>
+    <div style="margin-top:6px;text-align:right;"><b>Grand Qty:</b> ${grandQty}&nbsp;&nbsp;&nbsp;<b>Grand Total:</b> ${fmt2(grandAmt)}</div>`;
+  printArea.innerHTML=html;
+  window.print();
+});
+
+/* Print ledger with company + party address */
+printLedgerBtn.addEventListener('click',()=>{
+  if(!state){ alert('Login first'); return; }
+  const party=ledgerPartySelect.value;
+  if(!party){alert('Select party to print');return;}
+  const openingBalance=num(state.parties[party].openingBalance||0);
+  const fromDate=ledgerFromDateEl.value;
+  const toDate=ledgerToDateEl.value;
+
+  const partyObj = state.parties[party] || {};
+  const partyAddr = partyObj.address || '';
+
+  const invEntries=Object.entries(state.parties[party].invoices||{}).map(([invNo,inv])=>({
+    date:inv.date||inv.savedAt||'',desc:invNo,
+    grandQty:num(inv.grandQty||(inv.rows||[]).reduce((a,b)=>a+num(b.qty),0)),
+    debit:num(inv.grandAmt||(inv.rows||[]).reduce((a,b)=>a+num(b.total),0)),
+    credit:0,type:'invoice'
+  }));
+  const creditEntries=(state.credits[party]||[]).map(c=>({
+    date:c.date||'',desc:c.invNo||'Credit Bill',
+    grandQty:num(c.qty||0),debit:0,credit:num(c.amount||0),type:'creditbill'
+  }));
+  const payEntries=(state.payments||[]).filter(p=>p.party===party).map(p=>{
+    const isCredit=(p.type||'credit')==='credit';
+    return{
+      date:p.date||'',desc:p.notes?`Payment (${p.notes})`:'Payment',
+      grandQty:0,debit:isCredit?0:num(p.amount),credit:isCredit?num(p.amount):0,type:'payment'
+    };
+  });
+  const merged=invEntries.concat(creditEntries).concat(payEntries).sort((a,b)=>{
+    const da=new Date(a.date||'1970-01-01').getTime();
+    const db=new Date(b.date||'1970-01-01').getTime();
+    if(da!==db) return da-db;
+    const order={invoice:1,creditbill:2,payment:3};
+    return (order[a.type]||9)-(order[b.type]||9);
+  });
+
+  const logoHtml = state.company.logoData
+    ? `<img src="${state.company.logoData}" style="height:60px;margin-right:10px;" alt="Company Logo">`
+    : `<img src="logo.jpg" style="height:60px;margin-right:10px;" alt="Company Logo">`;
+
+  let html=`
+    <div style="border:1px solid #000;padding:8px 10px;margin-bottom:6px;">
+      <div style="display:flex;align-items:center;">
+        ${logoHtml}
+        <div style="line-height:1.4;">
+          <div style="font-size:18px;font-weight:700;">${nl2br(state.company.name || 'AL QUDOOS FRUITS')}</div>
+          <div style="font-size:12px;">${nl2br(state.company.address || '')}</div>
+          <div style="font-size:12px;">${nl2br(state.company.phone || '')}</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:4px;font-size:12px;">
+      <b>Ledger — ${escapeHtml(party)}</b><br>
+      <b>Address:</b> ${escapeHtml(partyAddr)}`;
+  if(fromDate||toDate){
+    html += ` &nbsp;&nbsp; Period: ${escapeHtml(fromDate||'...')} to ${escapeHtml(toDate||'...')}`;
+  }
+  html += `</div>`;
+
+  let runningBalance=openingBalance;
+  html+=`<table style="border-collapse:collapse;width:100%;border:0;">
+    <thead><tr>
+      <th style="padding:4px 6px;">Date</th>
+      <th style="padding:4px 6px;">Invoice No / Desc</th>
+      <th style="padding:4px 6px;text-align:right;">Grand Qty</th>
+      <th style="padding:4px 6px;text-align:right;">Debit</th>
+      <th style="padding:4px 6px;text-align:right;">Credit</th>
+      <th style="padding:4px 6px;text-align:right;">Balance</th>
+    </tr></thead><tbody>`;
+  html+=`<tr>
+    <td style="padding:4px 6px;"></td>
+    <td style="padding:4px 6px;text-align:left;">Opening Balance</td>
+    <td style="padding:4px 6px;text-align:right;">0</td>
+    <td style="padding:4px 6px;text-align:right;">${openingBalance>=0?fmt2(openingBalance):'0.00'}</td>
+    <td style="padding:4px 6px;text-align:right;">${openingBalance<0?fmt2(-openingBalance):'0.00'}</td>
+    <td style="padding:4px 6px;text-align:right;">${fmt2(runningBalance)}</td>
+  </tr>`;
+  merged.forEach(e=>{
+    if(!inRange(e.date||'',fromDate,toDate)) return;
+    runningBalance+=(e.debit-e.credit);
+    html+=`<tr>
+      <td style="padding:4px 6px;">${escapeHtml(formatDisplayDate(e.date))}</td>
+      <td style="padding:4px 6px;text-align:left;">${escapeHtml(e.desc)}</td>
+      <td style="padding:4px 6px;text-align:right;">${e.grandQty||0}</td>
+      <td style="padding:4px 6px;text-align:right;">${fmt2(e.debit)}</td>
+      <td style="padding:4px 6px;text-align:right;">${fmt2(e.credit)}</td>
+      <td style="padding:4px 6px;text-align:right;">${fmt2(runningBalance)}</td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  printArea.innerHTML=html;
+  window.print();
+});
+
+/* Ctrl+P shortcut */
+window.addEventListener('keydown',function(e){
+  if(e.ctrlKey && (e.key==='p'||e.key==='P')){
+    const appVisible=document.getElementById('appRoot').style.display!=='none';
+    if(!appVisible) return;
+    e.preventDefault();
+    const activeSection=document.querySelector('.section.active');
+    if(activeSection && activeSection.id==='ledgerTab') printLedgerBtn.click();
+    else if(activeSection && activeSection.id==='newInvoice') printInvBtn.click();
+    else printInvBtn.click();
+  }
+});
+</script>
+
+</body>
+</html>
